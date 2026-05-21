@@ -202,6 +202,30 @@ function buildQaEngine(tenants: Tenant[]) {
       }
     }
 
+    // --- Direct name matching (no prefix word needed) ---
+    // If none of the above patterns matched, try matching the raw question
+    // against tenant names directly (e.g. "Mercer County Community College")
+    {
+      const results = findTenant(q)
+      if (results.length > 0) {
+        if (results.length === 1) {
+          const t = results[0]
+          return [
+            `**${t.name || 'Unnamed'}**`,
+            `\u2022 **ID**: ${t.id}`,
+            `\u2022 **Alias**: ${t.alias || '\u2014'}`,
+            `\u2022 **Region**: ${t.region || '\u2014'}`,
+            `\u2022 **ERP**: ${t.erp_type || '\u2014'}`,
+            `\u2022 **Deployment**: ${t.deployment_type || '\u2014'}`,
+            `\u2022 **Classification**: ${t.account_type || '\u2014'}`,
+            `\u2022 **Account ID**: ${t.accountId || '\u2014'}`,
+          ].join('\n')
+        }
+        const list = results.map(t => `\u2022 ${t.name || t.id} (${t.region || '?'})`).join('\n')
+        return `Found **${results.length}** matching tenants:\n${list}`
+      }
+    }
+
     // --- Fallback ---
     return [
       "I'm not sure how to answer that. Try asking about:",
@@ -234,10 +258,18 @@ export function ChatBot({ tenants }: ChatBotProps) {
   const [isListening, setIsListening] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
+  const [voiceMode, setVoiceMode] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const recognitionRef = useRef<any>(null)
+  const voiceModeRef = useRef(false)
+  const restartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    voiceModeRef.current = voiceMode
+  }, [voiceMode])
 
   const qaEngine = useMemo(() => buildQaEngine(tenants), [tenants])
 
@@ -263,7 +295,13 @@ export function ChatBot({ tenants }: ChatBotProps) {
     if (preferred) utterance.voice = preferred
 
     utterance.onstart = () => setIsSpeaking(true)
-    utterance.onend = () => setIsSpeaking(false)
+    utterance.onend = () => {
+      setIsSpeaking(false)
+      // If still in voice conversation mode, auto-restart listening
+      if (voiceModeRef.current) {
+        restartTimerRef.current = setTimeout(() => startListening(), 300)
+      }
+    }
     utterance.onerror = () => setIsSpeaking(false)
 
     window.speechSynthesis.speak(utterance)
@@ -286,6 +324,14 @@ export function ChatBot({ tenants }: ChatBotProps) {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 300)
     }
+  }, [isOpen])
+
+  // Cleanup voice mode on panel close
+  useEffect(() => {
+    if (!isOpen) {
+      exitVoiceMode()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
 
   const addMessage = (role: 'user' | 'bot', text: string) => {
@@ -320,18 +366,17 @@ export function ChatBot({ tenants }: ChatBotProps) {
     }
   }
 
-  /* ---- Voice Input ---- */
-  const toggleListening = () => {
-    if (isListening) {
-      stopListening()
-      return
-    }
+  /* ---- Voice Conversation Mode ---- */
+  const startListening = () => {
+    // If voice mode was cancelled while setting up, bail
+    if (!voiceModeRef.current) return
 
     const SpeechRecognitionAPI =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
 
     if (!SpeechRecognitionAPI) {
       addMessage('bot', 'Voice input is not supported in your browser. Please use Chrome or Edge.')
+      setVoiceMode(false)
       return
     }
 
@@ -344,18 +389,24 @@ export function ChatBot({ tenants }: ChatBotProps) {
       const transcript = event.results[0][0].transcript
       setInput(transcript)
       setIsListening(false)
-      // Auto-send after a brief moment so user can see the transcript
-      // Mark as voice-triggered so the bot speaks the reply aloud
+      // Auto-send — the reply will be spoken aloud
       setTimeout(() => handleSend(transcript, true), 200)
     }
 
     recognition.onerror = () => {
       setIsListening(false)
-      addMessage('bot', 'Sorry, I could not hear you. Please try again or type your question.')
+      // On error in voice mode, retry after a short pause
+      if (voiceModeRef.current) {
+        restartTimerRef.current = setTimeout(() => startListening(), 1000)
+      }
     }
 
     recognition.onend = () => {
       setIsListening(false)
+      // If voice mode is still active but no result came through, restart
+      if (voiceModeRef.current) {
+        restartTimerRef.current = setTimeout(() => startListening(), 500)
+      }
     }
 
     recognitionRef.current = recognition
@@ -363,9 +414,32 @@ export function ChatBot({ tenants }: ChatBotProps) {
     setIsListening(true)
   }
 
-  const stopListening = () => {
+  const exitVoiceMode = () => {
+    setVoiceMode(false)
+    voiceModeRef.current = false
+    if (restartTimerRef.current) {
+      clearTimeout(restartTimerRef.current)
+      restartTimerRef.current = null
+    }
     recognitionRef.current?.stop()
     setIsListening(false)
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel()
+    }
+    setIsSpeaking(false)
+  }
+
+  const toggleListening = () => {
+    if (voiceMode) {
+      // Exit voice conversation mode
+      exitVoiceMode()
+      return
+    }
+    // Enter voice conversation mode
+    stopSpeaking()
+    setVoiceMode(true)
+    voiceModeRef.current = true
+    startListening()
   }
 
   /* ---- Render helpers ---- */
@@ -401,7 +475,13 @@ export function ChatBot({ tenants }: ChatBotProps) {
               <div>
                 <div className="chatbot-header-title">Ethos Assistant</div>
                 <div className="chatbot-header-status">
-                  {isSpeaking ? '\uD83D\uDD0A Speaking...' : 'Online'}
+                  {voiceMode
+                    ? (isListening
+                        ? '\uD83C\uDF99\uFE0F Listening...'
+                        : (isSpeaking
+                            ? '\uD83D\uDD0A Speaking...'
+                            : '\uD83C\uDFA4 Voice mode'))
+                    : (isSpeaking ? '\uD83D\uDD0A Speaking...' : 'Online')}
                   &nbsp;&bull;&nbsp;{tenants.length} tenants indexed
                 </div>
               </div>
@@ -448,21 +528,23 @@ export function ChatBot({ tenants }: ChatBotProps) {
           {/* Input bar */}
           <div className="chatbot-input-bar">
             <button
-              className={`chatbot-voice-btn ${isListening ? 'chatbot-voice-btn--active' : ''}`}
+              className={`chatbot-voice-btn ${voiceMode ? 'chatbot-voice-btn--voice-mode' : ''} ${isListening ? 'chatbot-voice-btn--active' : ''}`}
               onClick={toggleListening}
-              title={isListening ? 'Stop listening' : 'Voice input'}
+              title={voiceMode ? 'Exit voice conversation' : 'Start voice conversation'}
             >
-              {isListening ? '\u23F9' : '\uD83C\uDFA4'}
+              {voiceMode ? '\uD83C\uDFA4' : (isListening ? '\u23F9' : '\uD83C\uDFA4')}
             </button>
             <input
               ref={inputRef}
               type="text"
               className="chatbot-input"
-              placeholder={isListening ? 'Listening...' : 'Ask a question...'}
+              placeholder={voiceMode
+                ? (isListening ? 'Speak your question\u2026' : 'Processing\u2026')
+                : (isListening ? 'Listening...' : 'Ask a question...')}
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              disabled={isListening}
+              disabled={isListening || voiceMode}
             />
             <button
               className="chatbot-send-btn"
