@@ -1,5 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
-// ... existing imports remain unchanged
+import { useState, useMemo, useEffect, useRef } from 'react'
 import tenantsData from './data/tenants.json'
 import { StatsGrid } from './components/StatsGrid';
 import { AnalyticsCharts } from './components/AnalyticsCharts';
@@ -237,12 +236,13 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  // Export current filtered list to CSV
-  const handleExportCsv = () => {
-    if (sortedTenants.length === 0) return
+  // Export CSVs with mode: 'filtered' (current view) or 'all' (complete dataset)
+  const handleExportCsv = (mode: 'filtered' | 'all') => {
+    const data = mode === 'all' ? rawTenants : sortedTenants
+    if (data.length === 0) return
 
     const headers = ['Tenant ID', 'Name', 'Alias', 'Label', 'ERP', 'Deployment', 'Region', 'Classification', 'Salesforce ID']
-    const rows = sortedTenants.map(t => [
+    const rows = data.map(t => [
       t.id,
       `"${t.name?.replace(/"/g, '""') || ''}"`,
       t.alias || '',
@@ -254,17 +254,35 @@ export default function App() {
       t.accountId || ''
     ])
 
-    const csvContent = 'data:text/csv;charset=utf-8,' 
+    const csvContent = 'data:text/csv;charset=utf-8,'
       + [headers.join(','), ...rows.map(e => e.join(','))].join('\n')
     
     const encodedUri = encodeURI(csvContent)
     const link = document.createElement('a')
+    const suffix = mode === 'all' ? 'all' : 'filtered'
     link.setAttribute('href', encodedUri)
-    link.setAttribute('download', `ethos_tenants_export_${Date.now()}.csv`)
+    link.setAttribute('download', `ethos_tenants_${suffix}_${Date.now()}.csv`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
   }
+
+  // Export scope toggle state
+  const [showExportMenu, setShowExportMenu] = useState(false)
+  const exportRef = useRef<HTMLDivElement>(null)
+
+  // Close export menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
+        setShowExportMenu(false)
+      }
+    }
+    if (showExportMenu) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showExportMenu])
 
   return (
     <>
@@ -283,13 +301,30 @@ export default function App() {
             </p>
           </div>
           
-                    <div className="header-actions">
+          <div className="header-actions">
             <button className="btn btn-secondary" onClick={toggleTheme} title="Toggle light/dark mode">
               {theme === 'dark' ? '🌞 Light' : '🌙 Dark'}
             </button>
-            <button className="btn btn-secondary" onClick={handleExportCsv} disabled={sortedTenants.length === 0}>
-              📥 Export to CSV
-            </button>
+            <div className="export-dropdown-container" ref={exportRef} style={{ position: 'relative' }}>
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowExportMenu(prev => !prev)}
+                disabled={rawTenants.length === 0}
+                title="Export options"
+              >
+                📥 Export ▼
+              </button>
+              {showExportMenu && (
+                <div className="export-dropdown-menu">
+                  <button onClick={() => { handleExportCsv('filtered'); setShowExportMenu(false); }}>
+                    📄 Export Filtered ({sortedTenants.length.toLocaleString()} records)
+                  </button>
+                  <button onClick={() => { handleExportCsv('all'); setShowExportMenu(false); }}>
+                    📚 Export All ({rawTenants.length.toLocaleString()} records)
+                  </button>
+                </div>
+              )}
+            </div>
             <button className="btn btn-primary" onClick={handleResetFilters}>
               🔄 Reset Directory
             </button>
