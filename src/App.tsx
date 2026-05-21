@@ -1,10 +1,11 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import tenantsData from './data/tenants.json'
 import { StatsGrid } from './components/StatsGrid';
 import { AnalyticsCharts } from './components/AnalyticsCharts';
 import { TenantTable, Tenant } from './components/TenantTable';
 import { TenantDrawer } from './components/TenantDrawer';
 import { LoginPage } from './components/LoginPage';
+import { ConfettiEffect } from './components/ConfettiEffect';
 
 // Type-cast imported JSON as Tenant array
 const rawTenants: Tenant[] = tenantsData as Tenant[];
@@ -12,6 +13,8 @@ const rawTenants: Tenant[] = tenantsData as Tenant[];
 export default function App() {
   // Auth state — user must log in before accessing the dashboard
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  // Show confetti briefly right after login
+  const [showConfetti, setShowConfetti] = useState(false)
 
   // Theme toggle state
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
@@ -26,6 +29,13 @@ export default function App() {
   }, [theme])
 
   const toggleTheme = () => setTheme(prev => (prev === 'dark' ? 'light' : 'dark'))
+
+  const handleLogin = useCallback(() => {
+    setIsLoggedIn(true)
+    setShowConfetti(true)
+    // Auto-hide confetti after 4 seconds
+    setTimeout(() => setShowConfetti(false), 4000)
+  }, [])
 
   // --- Existing States ---
   const [searchQuery, setSearchQuery] = useState('')
@@ -289,11 +299,12 @@ export default function App() {
   }, [showExportMenu])
 
   if (!isLoggedIn) {
-    return <LoginPage onLogin={() => setIsLoggedIn(true)} />
+    return <LoginPage onLogin={handleLogin} />
   }
 
   return (
     <>
+      {showConfetti && <ConfettiEffect duration={4000} />}
       <div className="bg-gradient-canvas" />
       
       <div className="app-container">

@@ -73,10 +73,10 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({ erpData, deplo
                       className="bar-chart-fill" 
                       style={{ 
                         width: `${widthPercentage}%`,
-                        background: item.name === 'Banner' 
-                          ? 'linear-gradient(90deg, hsl(262 80% 60%) 0%, hsl(214 100% 55%) 100%)' 
-                          : item.name === 'Colleague' 
-                            ? 'linear-gradient(90deg, hsl(214 100% 55%) 0%, hsl(185 85% 45%) 100%)' 
+                        background: item.name === 'Banner'
+                          ? 'linear-gradient(90deg, hsl(187 85% 53%) 0%, hsl(15 90% 65%) 100%)'
+                          : item.name === 'Colleague'
+                            ? 'linear-gradient(90deg, hsl(15 90% 65%) 0%, hsl(200 85% 55%) 100%)'
                             : 'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.25) 100%)'
                       }}
                     />

@@ -1,23 +1,23 @@
 :root {
-  /* Color System (HSL) */
-  --bg-dark: 240 10% 4%;
-  --bg-card: 240 8% 8%;
-  --bg-card-hover: 240 8% 12%;
+  /* Color System (HSL) — Fresh, modern palette */
+  --bg-dark: 225 12% 6%;
+  --bg-card: 225 10% 10%;
+  --bg-card-hover: 225 10% 14%;
   
-  --accent-primary: 262 80% 60%;      /* Indigo-violet */
-  --accent-secondary: 214 100% 55%;    /* Bright blue */
-  --accent-success: 142 70% 45%;      /* Emerald green */
-  --accent-warning: 32 95% 55%;        /* Amber orange */
-  --accent-danger: 346 80% 55%;        /* Rose red */
-  --accent-info: 185 85% 45%;          /* Cyan */
+  --accent-primary: 187 85% 53%;      /* Vibrant teal-cyan */
+  --accent-secondary: 15 90% 65%;     /* Warm coral-peach */
+  --accent-success: 152 60% 50%;      /* Fresh emerald */
+  --accent-warning: 35 90% 55%;       /* Bright amber */
+  --accent-danger: 350 75% 55%;       /* Soft rose */
+  --accent-info: 200 85% 55%;         /* Sky blue */
   
-  --border-light: rgba(255, 255, 255, 0.05);
-  --border-medium: rgba(255, 255, 255, 0.08);
-  --border-focus: rgba(139, 92, 246, 0.5);
+  --border-light: rgba(255, 255, 255, 0.06);
+  --border-medium: rgba(255, 255, 255, 0.10);
+  --border-focus: rgba(45, 212, 191, 0.5);
   
   --text-primary: 0 0% 98%;
-  --text-secondary: 240 5% 75%;
-  --text-muted: 240 5% 50%;
+  --text-secondary: 220 10% 78%;
+  --text-muted: 220 8% 52%;
   
   /* Font Families */
   --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -30,9 +30,9 @@
   --radius-xl: 24px;
   
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.6), 0 2px 6px -1px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.7), 0 4px 12px -2px rgba(0, 0, 0, 0.6);
-  --shadow-glow: 0 0 20px 0 rgba(139, 92, 246, 0.15);
+  --shadow-md: 0 4px 16px -2px rgba(0, 0, 0, 0.6), 0 2px 6px -1px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 28px -4px rgba(0, 0, 0, 0.7), 0 4px 12px -2px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 24px 0 rgba(45, 212, 191, 0.20);
 }
 
 /* ============================================
@@ -40,22 +40,25 @@
    Applied when <html> has class "light"
    ============================================ */
 .light {
-  --bg-dark: 220 15% 96%;
+  --bg-dark: 40 20% 96%;
   --bg-card: 0 0% 100%;
-  --bg-card-hover: 220 15% 92%;
+  --bg-card-hover: 40 20% 92%;
+  
+  --accent-primary: 187 80% 40%;      /* Deeper teal for light bg contrast */
+  --accent-secondary: 15 85% 55%;     /* Richer coral */
   
   --border-light: rgba(0, 0, 0, 0.06);
-  --border-medium: rgba(0, 0, 0, 0.1);
-  --border-focus: rgba(139, 92, 246, 0.4);
+  --border-medium: rgba(0, 0, 0, 0.10);
+  --border-focus: rgba(45, 212, 191, 0.5);
   
-  --text-primary: 240 10% 10%;
-  --text-secondary: 240 5% 35%;
-  --text-muted: 240 5% 55%;
+  --text-primary: 225 15% 12%;
+  --text-secondary: 225 8% 38%;
+  --text-muted: 225 6% 55%;
 
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.1), 0 4px 12px -2px rgba(0, 0, 0, 0.08);
-  --shadow-glow: 0 0 20px 0 rgba(139, 92, 246, 0.08);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.07), 0 2px 6px -1px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.09), 0 4px 12px -2px rgba(0, 0, 0, 0.07);
+  --shadow-glow: 0 0 20px 0 rgba(45, 212, 191, 0.10);
 }
 
 /* Light scrollbar */
@@ -68,7 +71,7 @@
 
 /* Light header title */
 .light .header-title {
-  background: linear-gradient(135deg, hsl(240 10% 10%) 30%, hsl(var(--accent-primary) / 0.8) 100%);
+  background: linear-gradient(135deg, hsl(225 15% 12%) 30%, hsl(var(--accent-primary) / 0.8) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -220,7 +223,7 @@ html:not(.light) select.select-field option {
 }
 
 .export-dropdown-menu button:hover {
-  background: rgba(139, 92, 246, 0.12);
+  background: var(--border-focus);
   color: white;
 }
 
@@ -228,7 +231,7 @@ html:not(.light) select.select-field option {
   color: hsl(var(--text-primary));
 }
 .light .export-dropdown-menu button:hover {
-  background: rgba(139, 92, 246, 0.1);
+  background: rgba(45, 212, 191, 0.1);
   color: hsl(var(--text-primary));
 }
 
@@ -384,7 +387,7 @@ h1, h2, h3, h4, h5, h6 {
 .btn-primary:hover {
   transform: translateY(-2px);
   filter: brightness(1.1);
-  box-shadow: 0 0 25px 0 rgba(139, 92, 246, 0.3);
+  box-shadow: 0 0 25px 0 rgba(45, 212, 191, 0.3);
 }
 
 .btn-secondary {
@@ -547,7 +550,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .search-highlight {
-  background: rgba(139, 92, 246, 0.4);
+  background: rgba(45, 212, 191, 0.4);
   color: white;
   border-radius: 2px;
   padding: 0 2px;
