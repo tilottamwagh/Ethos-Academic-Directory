@@ -218,18 +218,25 @@ function buildQaEngine(tenants: Tenant[]) {
       }
 
       if (results.length > 0) {
-        if (results.length === 1) {
-          const t = results[0]
-          return [
-            `**${t.name || 'Unnamed'}**`,
-            `\u2022 **ID**: ${t.id}`,
-            `\u2022 **Alias**: ${t.alias || '\u2014'}`,
-            `\u2022 **Region**: ${t.region || '\u2014'}`,
-            `\u2022 **ERP**: ${t.erp_type || '\u2014'}`,
-            `\u2022 **Deployment**: ${t.deployment_type || '\u2014'}`,
-            `\u2022 **Classification**: ${t.account_type || '\u2014'}`,
-            `\u2022 **Account ID**: ${t.accountId || '\u2014'}`,
-          ].join('\n')
+        // If all results share the same name, show full details for each entry
+        // (e.g. "University of Northern Colorado" has 4 entries sharing one name)
+        const allSameName = new Set(results.map(t => (t.name || '').toLowerCase())).size === 1
+        if (results.length === 1 || allSameName) {
+          const details = results.map(t =>
+            [
+              `**${t.name || 'Unnamed'}**`,
+              `\u2022 **ID**: ${t.id}`,
+              `\u2022 **Alias**: ${t.alias || '\u2014'}`,
+              `\u2022 **Region**: ${t.region || '\u2014'}`,
+              `\u2022 **ERP**: ${t.erp_type || '\u2014'}`,
+              `\u2022 **Deployment**: ${t.deployment_type || '\u2014'}`,
+              `\u2022 **Classification**: ${t.account_type || '\u2014'}`,
+              `\u2022 **Account ID**: ${t.accountId || '\u2014'}`,
+            ].join('\n')
+          )
+          return details.length === 1
+            ? details[0]
+            : `Found **${results.length}** entries for **${results[0].name}**:\n\n${details.join('\n\n')}`
         }
         const list = results.map(t => `\u2022 ${t.name || t.id} (${t.region || '?'})`).join('\n')
         return `Found **${results.length}** matching tenants:\n${list}`
