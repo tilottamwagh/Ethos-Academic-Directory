@@ -206,7 +206,17 @@ function buildQaEngine(tenants: Tenant[]) {
     // If none of the above patterns matched, try matching the raw question
     // against tenant names directly (e.g. "Mercer County Community College")
     {
-      const results = findTenant(q)
+      let results = findTenant(q)
+
+      // If no match and query has parenthetical text like "College (United States)",
+      // strip the parenthetical suffix and retry
+      if (results.length === 0 && /\(.+\)/.test(q)) {
+        const stripped = q.replace(/\(.+?\)/g, '').trim()
+        if (stripped) {
+          results = findTenant(stripped)
+        }
+      }
+
       if (results.length > 0) {
         if (results.length === 1) {
           const t = results[0]
