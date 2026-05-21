@@ -6,6 +6,7 @@ import { TenantTable, Tenant } from './components/TenantTable';
 import { TenantDrawer } from './components/TenantDrawer';
 import { LoginPage } from './components/LoginPage';
 import { ConfettiEffect } from './components/ConfettiEffect';
+import { ChatBot } from './components/ChatBot';
 
 // Type-cast imported JSON as Tenant array
 const rawTenants: Tenant[] = tenantsData as Tenant[];
@@ -491,6 +492,9 @@ export default function App() {
           tenant={selectedTenant}
           onClose={() => setSelectedTenant(null)}
         />
+
+        {/* Floating ChatBot assistant */}
+        <ChatBot tenants={rawTenants} />
 
       </div>
     </>
