@@ -919,3 +919,132 @@ h1, h2, h3, h4, h5, h6 {
   background: #ffffff;
   color: #222222;
 }
+
+/* ============================================
+   LOGIN PAGE
+   ============================================ */
+.login-page {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.login-container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.login-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.login-icon {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.login-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #fff 30%, hsl(var(--accent-primary) / 0.8) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.light .login-title {
+  background: linear-gradient(135deg, hsl(240 10% 10%) 30%, hsl(var(--accent-primary) / 0.8) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.login-subtitle {
+  font-size: 0.95rem;
+  color: hsl(var(--text-muted));
+}
+
+.login-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 32px;
+}
+
+.login-error {
+  background: hsl(var(--accent-danger) / 0.15);
+  border: 1px solid hsl(var(--accent-danger) / 0.3);
+  color: hsl(var(--accent-danger));
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.login-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: hsl(var(--text-muted));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: var(--font-heading);
+}
+
+.login-input {
+  padding: 12px 16px !important;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 14px 18px !important;
+  font-size: 1rem !important;
+  margin-top: 4px;
+}
+
+.login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  filter: none !important;
+  box-shadow: var(--shadow-glow) !important;
+}
+
+.login-hint {
+  text-align: center;
+  font-size: 0.8rem;
+  color: hsl(var(--text-muted));
+}
+
+.login-hint strong {
+  color: hsl(var(--text-secondary));
+}
+
+/* Small spinner inside the login button */
+.spinner-small {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}

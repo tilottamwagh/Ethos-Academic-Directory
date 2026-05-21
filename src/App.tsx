@@ -4,11 +4,15 @@ import { StatsGrid } from './components/StatsGrid';
 import { AnalyticsCharts } from './components/AnalyticsCharts';
 import { TenantTable, Tenant } from './components/TenantTable';
 import { TenantDrawer } from './components/TenantDrawer';
+import { LoginPage } from './components/LoginPage';
 
 // Type-cast imported JSON as Tenant array
 const rawTenants: Tenant[] = tenantsData as Tenant[];
 
 export default function App() {
+  // Auth state — user must log in before accessing the dashboard
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
   // Theme toggle state
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
 
@@ -284,6 +288,10 @@ export default function App() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [showExportMenu])
 
+  if (!isLoggedIn) {
+    return <LoginPage onLogin={() => setIsLoggedIn(true)} />
+  }
+
   return (
     <>
       <div className="bg-gradient-canvas" />
@@ -304,6 +312,9 @@ export default function App() {
           <div className="header-actions">
             <button className="btn btn-secondary" onClick={toggleTheme} title="Toggle light/dark mode">
               {theme === 'dark' ? '🌞 Light' : '🌙 Dark'}
+            </button>
+            <button className="btn btn-secondary" onClick={() => setIsLoggedIn(false)} title="Sign out">
+              🚪 Logout
             </button>
             <div className="export-dropdown-container" ref={exportRef} style={{ position: 'relative' }}>
               <button
@@ -333,11 +344,11 @@ export default function App() {
         </header>
 
         {/* Stats Summary Panel */}
-        <StatsGrid 
-          total={stats.total} 
-          clients={stats.clients} 
-          saasCount={stats.saasCount} 
-          erpCount={stats.erpCount} 
+        <StatsGrid
+          total={stats.total}
+          clients={stats.clients}
+          saasCount={stats.saasCount}
+          erpCount={stats.erpCount}
         />
 
         {/* Filtering & Toolbar Controls */}
@@ -351,10 +362,10 @@ export default function App() {
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
             </div>
-            <input 
-              type="text" 
-              className="input-field" 
-              placeholder="Search university name, alias, territory, ID..." 
+            <input
+              type="text"
+              className="input-field"
+              placeholder="Search university name, alias, territory, ID..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value)
@@ -364,9 +375,9 @@ export default function App() {
           </div>
 
           {/* ERP Dropdown */}
-          <select 
-            className="select-field" 
-            value={selectedErp} 
+          <select
+            className="select-field"
+            value={selectedErp}
             onChange={(e) => {
               setSelectedErp(e.target.value)
               setCurrentPage(1)
@@ -379,9 +390,9 @@ export default function App() {
           </select>
 
           {/* Deployment Dropdown */}
-          <select 
-            className="select-field" 
-            value={selectedDeployment} 
+          <select
+            className="select-field"
+            value={selectedDeployment}
             onChange={(e) => {
               setSelectedDeployment(e.target.value)
               setCurrentPage(1)
@@ -394,9 +405,9 @@ export default function App() {
           </select>
 
           {/* Region Dropdown */}
-          <select 
-            className="select-field" 
-            value={selectedRegion} 
+          <select
+            className="select-field"
+            value={selectedRegion}
             onChange={(e) => {
               setSelectedRegion(e.target.value)
               setCurrentPage(1)
@@ -409,9 +420,9 @@ export default function App() {
           </select>
 
           {/* Classification Dropdown */}
-          <select 
-            className="select-field" 
-            value={selectedAccountType} 
+          <select
+            className="select-field"
+            value={selectedAccountType}
             onChange={(e) => {
               setSelectedAccountType(e.target.value)
               setCurrentPage(1)
@@ -424,9 +435,9 @@ export default function App() {
           </select>
 
           {/* Label Dropdown */}
-          <select 
-            className="select-field" 
-            value={selectedLabel} 
+          <select
+            className="select-field"
+            value={selectedLabel}
             onChange={(e) => {
               setSelectedLabel(e.target.value)
               setCurrentPage(1)
@@ -441,14 +452,14 @@ export default function App() {
         </div>
 
         {/* Custom Analytics Charts */}
-        <AnalyticsCharts 
-          erpData={chartsData.erp} 
+        <AnalyticsCharts
+          erpData={chartsData.erp}
           deploymentData={chartsData.deployment}
-          regionData={chartsData.region} 
+          regionData={chartsData.region}
         />
 
         {/* Directory Listing Table */}
-        <TenantTable 
+        <TenantTable
           tenants={sortedTenants}
           searchQuery={searchQuery}
           currentPage={currentPage}
@@ -465,9 +476,9 @@ export default function App() {
         />
 
         {/* Slide-out details drawer */}
-        <TenantDrawer 
-          tenant={selectedTenant} 
-          onClose={() => setSelectedTenant(null)} 
+        <TenantDrawer
+          tenant={selectedTenant}
+          onClose={() => setSelectedTenant(null)}
         />
 
       </div>
