@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import type { Tenant } from './TenantTable'
 
 /* ------------------------------------------------------------------ */
@@ -233,12 +233,48 @@ export function ChatBot({ tenants }: ChatBotProps) {
   const [input, setInput] = useState('')
   const [isListening, setIsListening] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const recognitionRef = useRef<any>(null)
 
   const qaEngine = useMemo(() => buildQaEngine(tenants), [tenants])
+
+  /* ---- Text-to-Speech (female voice) ---- */
+  const speakText = useCallback((text: string) => {
+    if (!('speechSynthesis' in window)) return
+
+    window.speechSynthesis.cancel()
+
+    // Strip markdown bold markers for cleaner speech
+    const clean = text.replace(/\*\*(.+?)\*\*/g, '$1')
+
+    const utterance = new SpeechSynthesisUtterance(clean)
+    utterance.lang = 'en-US'
+    utterance.rate = 0.95
+    utterance.pitch = 1.2
+
+    // Find a female voice
+    const voices = window.speechSynthesis.getVoices()
+    const preferred = voices.find(v =>
+      /female|woman|girl/i.test(v.name) || /(zira|samantha|karen|moira|tessa|veena|lekha)/i.test(v.name)
+    ) || voices.find(v => /english/i.test(v.lang) && /female/i.test(v.name))
+    if (preferred) utterance.voice = preferred
+
+    utterance.onstart = () => setIsSpeaking(true)
+    utterance.onend = () => setIsSpeaking(false)
+    utterance.onerror = () => setIsSpeaking(false)
+
+    window.speechSynthesis.speak(utterance)
+  }, [])
+
+  const stopSpeaking = useCallback(() => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel()
+    }
+    setIsSpeaking(false)
+  }, [])
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -257,7 +293,7 @@ export function ChatBot({ tenants }: ChatBotProps) {
     setMessages(prev => [...prev, { id, role, text }])
   }
 
-  const handleSend = (text: string) => {
+  const handleSend = (text: string, fromVoice = false) => {
     const trimmed = text.trim()
     if (!trimmed) return
 
@@ -270,6 +306,10 @@ export function ChatBot({ tenants }: ChatBotProps) {
       const reply = qaEngine.answer(trimmed)
       addMessage('bot', reply)
       setIsProcessing(false)
+      // Speak the reply aloud if triggered by voice input
+      if (fromVoice) {
+        speakText(reply)
+      }
     }, 400)
   }
 
@@ -305,7 +345,8 @@ export function ChatBot({ tenants }: ChatBotProps) {
       setInput(transcript)
       setIsListening(false)
       // Auto-send after a brief moment so user can see the transcript
-      setTimeout(() => handleSend(transcript), 200)
+      // Mark as voice-triggered so the bot speaks the reply aloud
+      setTimeout(() => handleSend(transcript, true), 200)
     }
 
     recognition.onerror = () => {
@@ -359,12 +400,22 @@ export function ChatBot({ tenants }: ChatBotProps) {
               <span className="chatbot-avatar">{'\uD83E\uDD16'}</span>
               <div>
                 <div className="chatbot-header-title">Ethos Assistant</div>
-                <div className="chatbot-header-status">Online &bull; {tenants.length} tenants indexed</div>
+                <div className="chatbot-header-status">
+                  {isSpeaking ? '\uD83D\uDD0A Speaking...' : 'Online'}
+                  &nbsp;&bull;&nbsp;{tenants.length} tenants indexed
+                </div>
               </div>
             </div>
-            <button className="chatbot-close-btn" onClick={() => setIsOpen(false)} title="Close">
-              {'\u2715'}
-            </button>
+            <div className="chatbot-header-actions">
+              {isSpeaking && (
+                <button className="chatbot-tts-btn" onClick={stopSpeaking} title="Stop speaking">
+                  {'\u23F9'}
+                </button>
+              )}
+              <button className="chatbot-close-btn" onClick={() => { stopSpeaking(); setIsOpen(false); }} title="Close">
+                {'\u2715'}
+              </button>
+            </div>
           </div>
 
           {/* Messages */}

@@ -1143,6 +1143,42 @@ h1, h2, h3, h4, h5, h6 {
   color: hsl(var(--text-secondary));
 }
 
+.chatbot-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chatbot-tts-btn {
+  background: hsl(var(--accent-primary) / 0.15);
+  border: 1px solid hsl(var(--accent-primary) / 0.3);
+  color: hsl(var(--accent-primary));
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+  line-height: 1;
+  animation: pulseSpeaker 1.5s infinite;
+}
+
+.chatbot-tts-btn:hover {
+  background: hsl(var(--accent-primary) / 0.25);
+}
+
+@keyframes pulseSpeaker {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsl(var(--accent-primary) / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px hsl(var(--accent-primary) / 0);
+  }
+}
+
 .chatbot-close-btn {
   background: none;
   border: none;
