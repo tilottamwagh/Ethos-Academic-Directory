@@ -45,12 +45,12 @@ export default function App() {
   const [selectedRegion, setSelectedRegion] = useState('All')
   const [selectedAccountType, setSelectedAccountType] = useState('All')
   const [selectedLabel, setSelectedLabel] = useState('All')
-  
+
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null)
-  
+
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
-  
+
   const [sortBy, setSortBy] = useState('name')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
@@ -99,8 +99,8 @@ export default function App() {
         const matchesErp = item.erp_type?.toLowerCase().includes(query)
         const matchesDep = item.deployment_type?.toLowerCase().includes(query)
         const matchesAccount = item.account_type?.toLowerCase().includes(query)
-        const matchesId = item.accountId?.toLowerCase().includes(query)
-        
+        const matchesId = item.id?.toLowerCase().includes(query)
+
         if (!matchesName && !matchesAlias && !matchesRegion && !matchesErp && !matchesDep && !matchesAccount && !matchesId) {
           return false
         }
@@ -111,7 +111,7 @@ export default function App() {
       if (selectedDeployment !== 'All' && item.deployment_type !== selectedDeployment) return false
       if (selectedRegion !== 'All' && item.region !== selectedRegion) return false
       if (selectedAccountType !== 'All' && item.account_type !== selectedAccountType) return false
-      
+
       if (selectedLabel !== 'All') {
         const labelLower = item.label?.toLowerCase() || ''
         const filterLower = selectedLabel.toLowerCase()
@@ -271,7 +271,7 @@ export default function App() {
 
     const csvContent = 'data:text/csv;charset=utf-8,'
       + [headers.join(','), ...rows.map(e => e.join(','))].join('\n')
-    
+
     const encodedUri = encodeURI(csvContent)
     const link = document.createElement('a')
     const suffix = mode === 'all' ? 'all' : 'filtered'
@@ -307,9 +307,9 @@ export default function App() {
     <>
       {showConfetti && <ConfettiEffect duration={4000} />}
       <div className="bg-gradient-canvas" />
-      
+
       <div className="app-container">
-        
+
         {/* Header Section */}
         <header className="header animate-fade-in">
           <div className="header-title-group">
@@ -320,7 +320,7 @@ export default function App() {
               Sleek analytics and search engine across Ellucian's complete global cloud tenant database
             </p>
           </div>
-          
+
           <div className="header-actions">
             <button className="btn btn-secondary" onClick={toggleTheme} title="Toggle light/dark mode">
               {theme === 'dark' ? '🌞 Light' : '🌙 Dark'}
@@ -365,7 +365,7 @@ export default function App() {
 
         {/* Filtering & Toolbar Controls */}
         <div className="glass-card filter-bar animate-fade-in" style={{ animationDelay: '0.05s' }}>
-          
+
           {/* Search Box */}
           <div className="input-group">
             <div className="input-icon">
